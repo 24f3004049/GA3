@@ -387,7 +387,7 @@ async def answer_audio(request: Request):
     except Exception as e:
         transcript = ""
         last_debug_info["exception"] = str(e)
-    
+
     last_debug_info["transcript"] = transcript
 
     # Step 1: LLM extracts structured data AND identifies requested statistics
@@ -525,7 +525,7 @@ async def answer_audio(request: Request):
         if not v:
             continue
         cols_vals.append(v)
-        
+
         if "mean" in req_stats: out["mean"][name] = mean(v)
         if "std" in req_stats: out["std"][name] = pstdev(v) if len(v) > 1 else 0.0
         if "variance" in req_stats: out["variance"][name] = pvariance(v) if len(v) > 1 else 0.0
@@ -576,7 +576,7 @@ async def answer_audio(request: Request):
                                       "type": "negative" if num < 0 else "positive"})
     if corr_list:
         out["correlation"] = corr_list
-        
+
     # ---- Decide the EXACT set of stats the grader wants (the whole ballgame) ----
     # The model sets requested_stats to the FULL list as its "nothing specific was
     # asked, only a constraint was stated" signal. In that case the grader wants
