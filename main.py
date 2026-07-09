@@ -443,7 +443,7 @@ async def answer_audio(request: Request):
         f"TRANSCRIPT:\n{transcript}"
     )
     columns, data_rows, req_stats, num_rows, explicit_stats = [], [], [], None, {}
-    try:
+   try:
         # Use gpt-4o (the strongest model) for precise translation and schema extraction
         raw_llm = await chat([{"role": "user", "content": prompt}], model="gpt-4o", max_tokens=1500)
         last_debug_info["raw_llm"] = raw_llm
@@ -453,6 +453,24 @@ async def answer_audio(request: Request):
         req_stats = ext.get("requested_stats", [])
         num_rows = ext.get("num_rows")
         explicit_stats = ext.get("explicit_stats", {})
+
+        # === ADD THIS FIX HERE ===
+        # If the model found constraints but couldn't name a column, fix it dynamically
+        if not columns and explicit_stats:
+            for stat_key, stat_val in list(explicit_stats.items()):
+                if isinstance(stat_val, dict) and stat_val:
+                    # If gpt-4o used an empty string "" as a placeholder key
+                    if "" in stat_val:
+                        stat_val["col_0"] = stat_val.pop("")
+                    # Use whatever keys are inside the stats as our column names
+                    columns = list(stat_val.keys())
+                    break
+        
+        # Absolute safety fallback: if columns is STILL empty, give it a default name
+        if not columns:
+            columns = ["col_0"]
+        # =========================
+
     except Exception:
         pass
 
